@@ -9,6 +9,17 @@ CanvasRenderingContext2D.prototype.fillRoundRect = function(x,y,w,h,r){
     this.closePath();
     this.fill();
 }
+CanvasRenderingContext2D.prototype.setShadow = function(shadow){
+    if(shadow!= "none")
+    {
+        const [color,x,y,blur] = css.boxShadow.split(/\) |px/);
+        
+        context.shadowOffsetX = parseInt(x) //阴影水平偏移
+        context.shadowOffsetY = parseInt(y) //阴影垂直偏移
+        context.shadowColor = color + ")" //阴影颜色   
+        context.shadowBlur = blur.trim() //阴影模糊度   
+    }
+}
 //元素是否为内联元素
 const isInline = element => {
          const _DISPLAY = element.style.display || getComputedStyle(element).display;
@@ -31,8 +42,8 @@ class DrawImage {
         canvas = document.createElement("canvas"),
         context = canvas.getContext("2d"),
        
-        canvas.width = offsetWidth,
-        canvas.height = offsetHeight,
+        canvas.width = offsetWidth + 20,
+        canvas.height = offsetHeight + 20,
         canvas.style.display = "none";
 
         this.draws();
@@ -43,7 +54,7 @@ class DrawImage {
     extract(){
         const {element:{offsetWidth,offsetHeight}} = this;
 
-        const _CSS_KEY = ["borderRadius","backgroundColor","font","color","textAlign","lineHeight","boxShadow"],
+        const _CSS_KEY = ["borderRadius","backgroundColor","font","color","textAlign","lineHeight","boxShadow","textShadow"],
               _CSS = window.getComputedStyle(this.element),
               _STYLE = this.element.style;
        
@@ -64,13 +75,15 @@ class DrawImage {
         if(nodeType == Node.TEXT_NODE && _TEXT)
         {
             let _x = offsetLeft,_y = css.height - 1
-
+            
             if(!isInline(this.element))
             {
                 _x = css.width / 2,_y = _y / 2;
                 
                 context.textAlign = css.textAlign;
             }
+
+            context.setShadow();
 
             context.font = css.font; context.fillStyle = css.color;
          
@@ -93,16 +106,8 @@ class DrawImage {
         {
             context.fillStyle = css.backgroundColor;
 
-            if(css.boxShadow != "none")
-            {
-                const [color,x,y,blur] = css.boxShadow.split("px");
-                console.log(color,x,y,blur,css.boxShadow.split(/px|) /))
-                context.shadowBlur = parseInt(blur) //阴影模糊度
-                context.shadowColor = color //阴影颜色
-                context.shadowOffsetX = parseInt(x) //阴影水平偏移
-                context.shadowOffsetY = parseInt(y) //阴影垂直偏移
-            }
-            
+            context.setShadow();
+
             context.fillRoundRect(0,0,css.width,css.height,css.borderRadius)
         }
     
