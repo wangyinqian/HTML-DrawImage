@@ -43,7 +43,7 @@ class DrawImage {
     extract(){
         const {element:{offsetWidth,offsetHeight}} = this;
 
-        const _CSS_KEY = ["borderRadius","backgroundColor","font","color","textAlign","lineHeight"],
+        const _CSS_KEY = ["borderRadius","backgroundColor","font","color","textAlign","lineHeight","boxShadow"],
               _CSS = window.getComputedStyle(this.element),
               _STYLE = this.element.style;
        
@@ -59,7 +59,7 @@ class DrawImage {
     drawText(){
         const {element:{offsetLeft,childNodes:[{nodeType,nodeValue}]}} = this;
 
-        const _TEXT = nodeValue.trim();
+        const _TEXT = nodeValue && nodeValue.trim();
         
         if(nodeType == Node.TEXT_NODE && _TEXT)
         {
@@ -88,14 +88,24 @@ class DrawImage {
     //单个元素绘制   
     draw(){
         this.extract();
-        
+           
         if(css.backgroundColor)
         {
             context.fillStyle = css.backgroundColor;
+
+            if(css.boxShadow != "none")
+            {
+                const [color,x,y,blur] = css.boxShadow.split("px");
+                console.log(color,x,y,blur,css.boxShadow.split(/px|) /))
+                context.shadowBlur = parseInt(blur) //阴影模糊度
+                context.shadowColor = color //阴影颜色
+                context.shadowOffsetX = parseInt(x) //阴影水平偏移
+                context.shadowOffsetY = parseInt(y) //阴影垂直偏移
+            }
             
             context.fillRoundRect(0,0,css.width,css.height,css.borderRadius)
         }
-
+    
         this.drawText()
     }
     //获取图片url
