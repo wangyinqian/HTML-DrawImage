@@ -1,3 +1,4 @@
+//绘制圆角矩形
 CanvasRenderingContext2D.prototype.fillRoundRect = function(x,y,w,h,r){
     this.beginPath(); //开始路径
     this.moveTo(x+r, y); //线的起点
@@ -9,16 +10,19 @@ CanvasRenderingContext2D.prototype.fillRoundRect = function(x,y,w,h,r){
     this.closePath();
     this.fill();
 }
-CanvasRenderingContext2D.prototype.setShadow = function(shadow){
-    if(shadow!= "none")
-    {
-        const [color,x,y,blur] = css.boxShadow.split(/\) |px/);
-        
-        context.shadowOffsetX = parseInt(x) //阴影水平偏移
-        context.shadowOffsetY = parseInt(y) //阴影垂直偏移
-        context.shadowColor = color + ")" //阴影颜色   
-        context.shadowBlur = blur.trim() //阴影模糊度   
-    }
+//设置阴影
+CanvasRenderingContext2D.prototype.setShadow = function(cssshadow){
+    if(cssshadow == "none"){ cssshadow = "rgba(0,0,0,0) 0px 0px 0px"; }
+
+    const [color,x,y,blur] =  cssshadow.split(/\) |px/);
+    //阴影水平偏移
+    this.shadowOffsetX = parseInt(x);
+    //阴影垂直偏移
+    this.shadowOffsetY = parseInt(y);
+    //阴影颜色  
+    this.shadowColor = color + ")";
+    //阴影模糊度     
+    this.shadowBlur = parseInt(blur)  
 }
 //元素是否为内联元素
 const isInline = element => {
@@ -32,18 +36,20 @@ let canvas = null,context = null,css = null;
 class DrawImage {
     constructor(element,opts = {}){
         this.element = element;
-        this.opts = Object.assign({},opts);
+        this.opts = Object.assign({
+                width:this.element.offsetWidth,
+                height:this.element.offsetHeight,
+                imgType:"image/png" 
+        },opts);
         this.createCanvas();
     }
     //创建画布
     createCanvas(){
-        const {element:{offsetWidth,offsetHeight}} = this;
-
         canvas = document.createElement("canvas"),
         context = canvas.getContext("2d"),
        
-        canvas.width = offsetWidth + 20,
-        canvas.height = offsetHeight + 20,
+        canvas.width = this.opts.width,
+        canvas.height = this.opts.height,
         canvas.style.display = "none";
 
         this.draws();
@@ -68,27 +74,32 @@ class DrawImage {
     }
     //绘制文本
     drawText(){
-        const {element:{offsetLeft,childNodes:[{nodeType,nodeValue}]}} = this;
+        const {element:{offsetLeft,childNodes}} = this;
 
-        const _TEXT = nodeValue && nodeValue.trim();
-        
-        if(nodeType == Node.TEXT_NODE && _TEXT)
+        if(childNodes && childNodes.length)
         {
-            let _x = offsetLeft,_y = css.height - 1
+            const [{nodeType,nodeValue}] = childNodes;
             
-            if(!isInline(this.element))
+            const _TEXT = nodeValue && nodeValue.trim();
+            
+            if(nodeType == Node.TEXT_NODE && _TEXT)
             {
-                _x = css.width / 2,_y = _y / 2;
+                let _x = offsetLeft,_y = css.height - 1
                 
-                context.textAlign = css.textAlign;
+                if(!isInline(this.element))
+                {
+                    _x = css.width / 2,_y = _y / 2;
+                    
+                    context.textAlign = css.textAlign;
+                }
+    
+                context.setShadow(css.textShadow);
+    
+                context.font = css.font; context.fillStyle = css.color;
+                
+                context.textBaseline = "middle";  context.fillText(_TEXT,_x,_y);
             }
-
-            context.setShadow();
-
-            context.font = css.font; context.fillStyle = css.color;
-         
-            context.textBaseline = "middle";  context.fillText(_TEXT,_x,_y);
-        }       
+        }    
     }
     //多元素绘制
     draws(){
@@ -106,16 +117,16 @@ class DrawImage {
         {
             context.fillStyle = css.backgroundColor;
 
-            context.setShadow();
+            context.setShadow(css.boxShadow);
 
             context.fillRoundRect(0,0,css.width,css.height,css.borderRadius)
         }
-    
+        
         this.drawText()
     }
     //获取图片url
     getURL(){
-        const _url = canvas.toDataURL();
+        const _url = canvas.toDataURL(this.opts.imgType);
 
         canvas.remove();
 
