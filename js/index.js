@@ -115,11 +115,13 @@ class DrawImage {
            
         if(css.backgroundColor)
         {
+            const {element:{offsetLeft:x,offsetTop:y}} = this;
+
             context.fillStyle = css.backgroundColor;
 
             context.setShadow(css.boxShadow);
 
-            context.fillRoundRect(0,0,css.width,css.height,css.borderRadius)
+            context.fillRoundRect(x,y,css.width,css.height,css.borderRadius);     
         }
         
         this.drawText()
