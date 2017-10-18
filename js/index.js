@@ -14,13 +14,13 @@ CanvasRenderingContext2D.prototype.fillRoundRect = function(x,y,w,h,r){
 CanvasRenderingContext2D.prototype.setShadow = function(cssshadow){
     if(cssshadow == "none"){ cssshadow = "rgba(0,0,0,0) 0px 0px 0px"; }
 
-    const [color,x,y,blur] =  cssshadow.split(/\) |px/);
+    const [color,x,y,blur] =  cssshadow.split(/ (?=[\d]+px)/);
     //阴影水平偏移
     this.shadowOffsetX = parseInt(x);
     //阴影垂直偏移
     this.shadowOffsetY = parseInt(y);
     //阴影颜色  
-    this.shadowColor = color + ")";
+    this.shadowColor = color;
     //阴影模糊度     
     this.shadowBlur = parseInt(blur)  
 }
@@ -60,7 +60,7 @@ class DrawImage {
     extract(){
         const {element:{offsetWidth,offsetHeight}} = this;
 
-        const _CSS_KEY = ["borderRadius","backgroundColor","font","color","textAlign","lineHeight","boxShadow","textShadow"],
+        const _CSS_KEY = ["borderRadius","backgroundColor","font","color","textAlign","lineHeight","boxShadow","textShadow","borderTop","borderLeft","borderRight","borderBottom"],
               _CSS = window.getComputedStyle(this.element),
               _STYLE = this.element.style;
        
@@ -101,6 +101,27 @@ class DrawImage {
             }
         }    
     }
+    //绘制边框
+    drawBorder(x,y){
+        let {borderTop,borderLeft,borderRight,borderBottom,borderRadius} = css,
+                //当空格后边紧跟的不是数字时通过空格进行分割
+            [t_w,t_t,t_c] = borderTop.split(/ (?!\d)/), 
+            [l_w,l_t,l_c] = borderLeft.split(/ (?!\d)/),
+            [b_w,b_t,b_c] = borderBottom.split(/ (?!\d)/),
+            [r_w,r_t,r_c] = borderRight.split(/ (?!\d)/);
+
+        t_w = parseInt(t_w),l_w = parseInt(l_w),b_w = parseInt(b_w),r_w = parseInt(r_w);
+
+        context.s
+
+        context.beginPath();
+        console.log(y,"dddddddd")
+        context.arcTo(x + css.width,y,x + css.width,y + t_w,0);
+
+        context.closePath();
+
+        context.stroke();
+    }
     //多元素绘制
     draws(){
         const {children,children:{length}} = this.element;
@@ -111,18 +132,20 @@ class DrawImage {
     }
     //单个元素绘制   
     draw(){
+        const {element:{offsetLeft:x,offsetTop:y}} = this;
+
         this.extract();
            
         if(css.backgroundColor)
         {
-            const {element:{offsetLeft:x,offsetTop:y}} = this;
-
             context.fillStyle = css.backgroundColor;
 
             context.setShadow(css.boxShadow);
-
+    
             context.fillRoundRect(x,y,css.width,css.height,css.borderRadius);     
         }
+
+        this.drawBorder(x,y);
         
         this.drawText()
     }
