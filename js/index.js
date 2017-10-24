@@ -119,15 +119,42 @@ let DrawImage = null;
 
             t_w = parseInt(t_w),l_w = parseInt(l_w),b_w = parseInt(b_w),r_w = parseInt(r_w);
 
-            context.s
+            if(t_w || l_w || b_w || r_w)
+            {   
 
-            context.beginPath();
-            console.log(y,"dddddddd")
-            context.arcTo(x + css.width,y,x + css.width,y + t_w,0);
+                context.beginPath();
+                
+                context.lineWidth = parseInt(t_w) * 2;
 
-            context.closePath();
+                context.strokeStyle = t_c;
+                
+                context.moveTo(x+borderRadius,y)
+             
+                context.arcTo(x + css.width,y,x + css.width,y + css.height,borderRadius);
 
-            context.stroke();
+                context.lineWidth = parseInt(r_w) * 2;
+
+                context.strokeStyle = r_c;
+                
+                context.arcTo(x + css.width,y + css.height,x,y + css.height,borderRadius);
+
+                context.lineWidth = parseInt(b_w) * 2;
+
+                context.strokeStyle = b_c;
+
+                context.arcTo(x,y+ css.height,x,y,borderRadius);
+
+                context.lineWidth = parseInt(l_w) * 2;
+
+                context.strokeStyle = l_c;
+
+                context.arcTo(x,y,x+ css.width,y,borderRadius);
+
+                context.closePath();
+    
+                context.stroke();
+            }
+            
         }
         //多元素绘制
         draws(){
