@@ -35,6 +35,34 @@ let DrawImage = null;
 
         return _DISPLAY == "inline"
     }
+    //绘制边框的线
+    const drawBorderLine = (x1,y1,x2,y2,w,c) =>{
+        context.beginPath();
+            console.log(x1,y1,x2,y2,w,c);
+        context.lineWidth = w * 2;
+
+        context.strokeStyle = c;
+        
+        context.moveTo(x1,y1)
+
+        context.lineTo(x2,y2);
+
+        context.closePath();
+
+        context.stroke();
+    }
+
+    const drawBorderRadius = (x,y,r,w,c,start,end,bool) =>{
+        context.beginPath();
+        
+        context.lineWidth = w;
+
+        context.strokeStyle = c;
+
+        context.arc(x,y,r,start,end,false);
+        
+        context.stroke();
+    }   
 
     let canvas = null,context = null,css = null;
 
@@ -110,56 +138,36 @@ let DrawImage = null;
         }
         //绘制边框
         drawBorder(x,y){
-            let {borderTop,borderLeft,borderRight,borderBottom,borderRadius} = css,
+            let {borderTop,borderLeft,borderRight,borderBottom,borderRadius,width,height} = css,
                     //当空格后边紧跟的不是数字时通过空格进行分割
                 [t_w,t_t,t_c] = borderTop.split(/ (?!\d)/), 
                 [l_w,l_t,l_c] = borderLeft.split(/ (?!\d)/),
                 [b_w,b_t,b_c] = borderBottom.split(/ (?!\d)/),
                 [r_w,r_t,r_c] = borderRight.split(/ (?!\d)/);
-
+         
             t_w = parseInt(t_w),l_w = parseInt(l_w),b_w = parseInt(b_w),r_w = parseInt(r_w);
 
-            if(t_w || l_w || b_w || r_w)
-            {   
+            t_w && drawBorderLine(x+borderRadius,y,width - borderRadius,y,t_w,t_c);
+            
+            r_w &&drawBorderLine(x+width,y + borderRadius,width,height - borderRadius,r_w,r_c);
 
-                context.beginPath();
-                
-                context.lineWidth = parseInt(t_w) * 2;
+            b_w && drawBorderLine(x + borderRadius,y + height,width - borderRadius,height,b_w,b_c);
 
-                context.strokeStyle = t_c;
-                
-                context.moveTo(x+borderRadius,y)
-             
-                context.arcTo(x + css.width,y,x + css.width,y + css.height,borderRadius);
+            l_w && drawBorderLine(x,y + borderRadius,x,height - borderRadius,l_w,l_c);
+            
+            drawBorderRadius(borderRadius + t_w/2,borderRadius + t_w /2,borderRadius,t_w,t_c,Math.PI,-1.6);
 
-                context.lineWidth = parseInt(r_w) * 2;
+            drawBorderRadius(width - borderRadius - t_w/2,borderRadius + t_w/2,borderRadius,t_w,t_c,-Math.PI/2,0);
 
-                context.strokeStyle = r_c;
-                
-                context.arcTo(x + css.width,y + css.height,x,y + css.height,borderRadius);
+            drawBorderRadius(borderRadius + t_w/2,height - borderRadius - t_w/2,borderRadius,t_w,t_c,1.6,Math.PI);
 
-                context.lineWidth = parseInt(b_w) * 2;
-
-                context.strokeStyle = b_c;
-
-                context.arcTo(x,y+ css.height,x,y,borderRadius);
-
-                context.lineWidth = parseInt(l_w) * 2;
-
-                context.strokeStyle = l_c;
-
-                context.arcTo(x,y,x+ css.width,y,borderRadius);
-
-                context.closePath();
-    
-                context.stroke();
-            }
+            drawBorderRadius(width - borderRadius - t_w/2,height - borderRadius - t_w/2,borderRadius,t_w,t_c,0,Math.PI/2)
             
         }
         //多元素绘制
         draws(){
             const {children,children:{length}} = this.element;
-
+            
             this.draw(); 
 
             length && [...children].forEach(e=>{this.element = e,this.draws()}); 
@@ -167,7 +175,8 @@ let DrawImage = null;
         //单个元素绘制   
         draw(){
             const {element:{offsetLeft:x,offsetTop:y}} = this;
-
+            console.dir(this.element);
+            console.log(x,y)
             this.extract();
                 
             if(css.backgroundColor)
